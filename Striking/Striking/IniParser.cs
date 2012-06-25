@@ -39,9 +39,14 @@ namespace Striking
   public class IniParser
   {
     /// <summary>
-    /// Gets or sets a Dictionary containing Dictionaries. The key represents a section, the nested key an actual value.
+    /// A Dictionary containing Dictionaries. The key represents a section, the nested key an actual value.
     /// </summary>
     private Dictionary<string, Dictionary<string, string>> pairs = new Dictionary<string, Dictionary<string, string>>();
+
+    /// <summary>
+    /// Regular expression pattern to match sections.
+    /// </summary>
+    private readonly Regex sectionPattern = new Regex(@"^\[[a-zA-Z.]*\]$", RegexOptions.Compiled);
 
     /// <summary>
     /// Gets or sets a string containing the path of the .ini.
@@ -144,7 +149,7 @@ namespace Striking
           line = line.Trim();
           if (line[0] == '[')
           {
-            if (Regex.IsMatch(line, @"^\[[a-zA-Z.]*\]$", RegexOptions.Compiled))
+            if(sectionPattern.IsMatch(line))
             {
               section = line.Substring(1, line.Length - 2);
               this.pairs[section] = new Dictionary<string, string>();
