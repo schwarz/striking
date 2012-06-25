@@ -58,19 +58,33 @@ namespace Striking.Tests
     [Fact]
     public void TestFill()
     {
-      var host = new Host();
+      var host = new SpecificAttribute();
       this.parser.Fill(host);
       Assert.Equal<string>(host.OwnerName, "John Doe");
       Assert.Equal<string>(host.IPAddress, "192.0.2.62");
     }
-  }
 
-  class Host
-  {
-    [Ini("owner", "name")]
-    public string OwnerName { get; set; }
+    [Fact]
+    public void TestSimpleFill()
+    {
+      var simpleAttribute = new SimpleAttribute();
+      this.parser.Fill(simpleAttribute);
+      Assert.Equal<string>(simpleAttribute.Name, "John Doe");
+    }
 
-    [Ini("database", "server")]
-    public string IPAddress { get; set; }
+    private class SimpleAttribute
+    {
+      [Ini("name")]
+      public string Name { get; set; }
+    }
+
+    private class SpecificAttribute
+    {
+      [Ini("owner", "name")]
+      public string OwnerName { get; set; }
+
+      [Ini("database", "server")]
+      public string IPAddress { get; set; }
+    }
   }
 }

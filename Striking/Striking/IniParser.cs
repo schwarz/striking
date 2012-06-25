@@ -95,27 +95,38 @@ namespace Striking
             var customAttribute = prop.GetCustomAttributesData().ElementAt(i);
             var value = string.Empty;
 
+            string section = string.Empty;
+            string key = string.Empty;
+
             if (customAttribute.ConstructorArguments.Count == 1)
             {
               // key
-              var key = customAttribute.ConstructorArguments[0].Value.ToString();
-              var section = ""; // todo
-
-              value = this[section][key];
+              key = customAttribute.ConstructorArguments[0].Value.ToString();
+              section = this.sectionOfKey(key);
             }
             else if (customAttribute.ConstructorArguments.Count == 2)
             {
               // key, section
-              var section = customAttribute.ConstructorArguments[0].Value.ToString();
-              var key = customAttribute.ConstructorArguments[1].Value.ToString();
-
-              value = this[section][key];
+              section = customAttribute.ConstructorArguments[0].Value.ToString();
+              key = customAttribute.ConstructorArguments[1].Value.ToString();
             }
 
+            value = this[section][key];
             prop.SetValue(target, value, null);
           }
         }
       }
+    }
+
+    private string sectionOfKey(string key)
+    {
+      foreach (var outer in this.pairs)
+      {
+        if(outer.Value.Keys.Contains(key)){
+          return outer.Key;
+        }
+      }
+      throw new KeyNotFoundException();
     }
 
     public void Parse()
