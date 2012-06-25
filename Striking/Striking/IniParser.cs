@@ -75,6 +75,10 @@ namespace Striking
       }
     }
 
+    /// <summary>
+    /// Fills an object's marked properties with values from the ini file.
+    /// </summary>
+    /// <param name="target">The object to operate on</param>
     public void Fill(object target)
     {
       var properties = target.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
@@ -186,6 +190,11 @@ namespace Striking
       }
     }
 
+    /// <summary>
+    /// Returns the name of the section a key first occurs in.
+    /// </summary>
+    /// <param name="key">The key</param>
+    /// <returns>Section name</returns>
     private string sectionOfKey(string key)
     {
       foreach (var outer in this.pairs)
