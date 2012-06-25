@@ -66,6 +66,7 @@ namespace Striking.Tests
       var simpleAttribute = new SimpleAttribute();
       this.parser.Fill(simpleAttribute);
       Assert.Equal<string>(simpleAttribute.Name, "John Doe");
+      parser.Save();
     }
 
     private class SimpleAttribute

@@ -125,6 +125,11 @@ namespace Striking
       }
     }
 
+    public IEnumerable<MemberInfo> GetThem()
+    {
+      return null;
+    }
+
     public void Parse()
     {
       this.pairs.Clear();
@@ -187,6 +192,11 @@ namespace Striking
           }
         }
       }
+    }
+
+    public void Save(params object[] objects)
+    {
+      
     }
 
     /// <summary>
