@@ -7,7 +7,7 @@ If you run into performance issues you can use Striking as a base to taylor your
 
 # Usage
 
-_The following examples work if you use the testdata.ini file from the test library._
+_The following examples work if you use the file testdata.ini from the test library._
 
 To load an ini file and access certain keys you would do this:
 
@@ -27,6 +27,29 @@ The first indexer specifies the section, the while the second specified the key:
 
 ```csharp
 string name = parser["owner"]["name"];
+```
+
+## Autofill
+
+It's also possible to define attributes for your properties, to let the parser automatically fill in the data you want.
+There is a single attribute with a different number of arguments. If you only specify a key, the parser will take the value of first occurance of said key:
+
+```csharp
+[Ini("name")]
+public string Name { get; set; }
+```
+
+To make this more precise and less prone to errors you can also specify a section:
+
+```csharp
+[Ini("owner", "name")]
+public string OwnerName { get; set; }
+```
+
+Now you simply pass this object as an argument the IniParser#Fill method like follows and you're done!
+
+```csharp
+parser.Fill(myObject);
 ```
 
 # Install
