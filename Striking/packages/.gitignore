@@ -1,0 +1,4 @@
+# NuGet
+*/
+!repositories.config
+!.gitignore

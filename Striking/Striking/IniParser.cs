@@ -27,17 +27,17 @@ namespace Striking
 {
   using System;
   using System.Collections.Generic;
+  using System.Dynamic;
   using System.IO;
   using System.Linq;
   using System.Text.RegularExpressions;
+  using System.Reflection;
 
   /// <summary>
   /// TODO: Update summary.
   /// </summary>
   public class IniParser
   {
-    public const string Delimiter = ";;";
-
     /// <summary>
     /// Gets or sets a string containing the path of the .ini.
     /// </summary>
@@ -46,17 +46,81 @@ namespace Striking
     /// <summary>
     /// Gets or sets a Dictionary containing all the key/value pairs. The key contains both the section and the key. For example: "General;;Name"
     /// </summary>
-    public Dictionary<string, string> Pairs { get; set; }
+    private Dictionary<string, Dictionary<string, string>> pairs { get; set; }
 
-    public IniParser(string filePath)
+    public IniParser(string filePath, bool parseImmediately = false)
     {
       this.FilePath = filePath;
-      this.Pairs = new Dictionary<string, string>();
+      this.pairs = new Dictionary<string, Dictionary<string, string>>();
+
+      if (parseImmediately)
+      {
+        this.Parse();
+      }
+    }
+
+    public Dictionary<string, string> this[string key]
+    {
+      get
+      {
+        return this.pairs[key];
+      }
+      set
+      {
+        this.pairs[key] = value;
+      }
+    }
+
+    public void Fill(object target)
+    {
+      var properties = target.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+      foreach (var prop in properties)
+      {
+        // Only copy properties with public get and set methods
+        if (!prop.CanRead || !prop.CanWrite || prop.GetGetMethod(false) == null || prop.GetSetMethod(false) == null) continue;
+        // Skip indexers
+        if (prop.GetGetMethod(false).GetParameters().Length > 0) continue;
+
+        var customAttributes = prop.GetCustomAttributes(typeof(IniAttribute), true).ToArray();
+        if (customAttributes.Length == 0)
+        {
+          continue; // no IniAttribute
+        }
+
+        for (int i = 0; i < prop.GetCustomAttributes(false).Length; i++)
+        {
+          if (prop.GetCustomAttributes(false).ElementAt(i).GetType() == typeof(IniAttribute))
+          {
+            var customAttribute = prop.GetCustomAttributesData().ElementAt(i);
+            var value = string.Empty;
+
+            if (customAttribute.ConstructorArguments.Count == 1)
+            {
+              // key
+              var key = customAttribute.ConstructorArguments[0].Value.ToString();
+              var section = ""; // todo
+
+              value = this[section][key];
+            }
+            else if (customAttribute.ConstructorArguments.Count == 2)
+            {
+              // key, section
+              var section = customAttribute.ConstructorArguments[0].Value.ToString();
+              var key = customAttribute.ConstructorArguments[1].Value.ToString();
+
+              value = this[section][key];
+            }
+
+            prop.SetValue(target, value, null);
+          }
+        }
+      }
     }
 
     public void Parse()
     {
-      this.Pairs.Clear();
+      this.pairs.Clear();
       // Add to this HashSet for additional comment delimiters
       var comments = new HashSet<char> { ';' };
 
@@ -84,6 +148,7 @@ namespace Striking
             if (Regex.IsMatch(line, @"^\[[a-zA-Z.]*\]$", RegexOptions.Compiled))
             {
               section = line.Substring(1, line.Length - 2);
+              this.pairs[section] = new Dictionary<string, string>();
             }
           }
           else
@@ -105,7 +170,8 @@ namespace Striking
               var keyValueSplit = line.Split('=');
               var pair = new Tuple<string, string>(keyValueSplit[0].TrimEnd(' '),
                                                    keyValueSplit[1].TrimStart(' '));
-              this.Pairs[section + Delimiter + pair.Item1] = pair.Item2;
+
+              this.pairs[section][pair.Item1] = pair.Item2;
             }
             else
             {
