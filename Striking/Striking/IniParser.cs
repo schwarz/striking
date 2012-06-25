@@ -49,7 +49,7 @@ namespace Striking
     private readonly Regex sectionPattern = new Regex(@"^\[[a-zA-Z.]*\]$", RegexOptions.Compiled);
 
     /// <summary>
-    /// Gets or sets a string containing the path of the .ini.
+    /// Gets or sets a string containing the path of the ini file.
     /// </summary>
     public string FilePath { get; set; }
 
