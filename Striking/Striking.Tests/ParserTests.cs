@@ -27,6 +27,7 @@ namespace Striking.Tests
 {
   using Striking;
   using Xunit;
+  using System;
 
   public class ParserTests
   {
@@ -54,10 +55,10 @@ namespace Striking.Tests
     [Fact]
     public void TestFill()
     {
-      var host = new SpecificAttribute();
-      this.parser.Fill(host);
-      Assert.Equal<string>(host.OwnerName, "John Doe");
-      Assert.Equal<string>(host.IPAddress, "192.0.2.62");
+      var specificAttribute = new SpecificAttribute();
+      this.parser.Fill(specificAttribute);
+      Assert.Equal<string>(specificAttribute.OwnerName, "John Doe");
+      Assert.Equal<string>(specificAttribute.IPAddress, "192.0.2.62");
     }
 
     [Fact]
@@ -66,7 +67,22 @@ namespace Striking.Tests
       var simpleAttribute = new SimpleAttribute();
       this.parser.Fill(simpleAttribute);
       Assert.Equal<string>(simpleAttribute.Name, "John Doe");
-      parser.Save();
+    }
+
+    [Fact]
+    public void TestSave()
+    {
+      var specificAttribute = new SpecificAttribute();
+      this.parser.Fill(specificAttribute);
+      specificAttribute.OwnerName = "Jane Doe";
+      this.parser.Save(specificAttribute);
+      Assert.Equal(parser["owner"]["name"], "Jane Doe");
+
+      var parser2 = new IniParser("testdata.ini", true);
+      Assert.Equal(parser2["owner"]["name"], "Jane Doe");
+
+      parser2["owner"]["name"] = "John Doe";
+      parser2.Save();
     }
 
     private class SimpleAttribute

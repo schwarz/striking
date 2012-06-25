@@ -47,6 +47,9 @@ namespace Striking
     /// </summary>
     private readonly Regex sectionPattern = new Regex(@"^\[[a-zA-Z.]*\]$", RegexOptions.Compiled);
 
+    // Add to this HashSet for additional comment delimiters
+    private readonly HashSet<char> comments = new HashSet<char> { ';' };
+
     /// <summary>
     /// Gets or sets a string containing the path of the ini file.
     /// </summary>
@@ -80,6 +83,36 @@ namespace Striking
     /// <param name="target">The object to operate on</param>
     public void Fill(object target)
     {
+      foreach (var pair in this.getRelatedPropertiesAndAttributeData(target))
+      {
+        var customAttributeData = pair.Item2;
+        var property = pair.Item1;
+
+        var value = string.Empty;
+        string section = string.Empty;
+        string key = string.Empty;
+
+
+        if (customAttributeData.ConstructorArguments.Count == 1)
+        {
+          // key
+          key = customAttributeData.ConstructorArguments[0].Value.ToString();
+          section = this.sectionOfKey(key);
+        }
+        else if (customAttributeData.ConstructorArguments.Count == 2)
+        {
+          // key, section
+          section = customAttributeData.ConstructorArguments[0].Value.ToString();
+          key = customAttributeData.ConstructorArguments[1].Value.ToString();
+        }
+
+        value = this[section][key];
+        property.SetValue(target, value, null);
+      } 
+    }
+
+    private IEnumerable<Tuple<PropertyInfo, CustomAttributeData>> getRelatedPropertiesAndAttributeData(object target)
+    {
       var properties = target.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
       foreach (var prop in properties)
@@ -99,60 +132,22 @@ namespace Striking
         {
           if (prop.GetCustomAttributes(false).ElementAt(i).GetType() == typeof(IniAttribute))
           {
-            var customAttribute = prop.GetCustomAttributesData().ElementAt(i);
-            var value = string.Empty;
-
-            string section = string.Empty;
-            string key = string.Empty;
-
-            if (customAttribute.ConstructorArguments.Count == 1)
-            {
-              // key
-              key = customAttribute.ConstructorArguments[0].Value.ToString();
-              section = this.sectionOfKey(key);
-            }
-            else if (customAttribute.ConstructorArguments.Count == 2)
-            {
-              // key, section
-              section = customAttribute.ConstructorArguments[0].Value.ToString();
-              key = customAttribute.ConstructorArguments[1].Value.ToString();
-            }
-
-            value = this[section][key];
-            prop.SetValue(target, value, null);
+            yield return new Tuple<PropertyInfo, CustomAttributeData>(prop, prop.GetCustomAttributesData().ElementAt(i));
           }
         }
       }
     }
 
-    public IEnumerable<MemberInfo> GetThem()
-    {
-      return null;
-    }
-
     public void Parse()
     {
       this.pairs.Clear();
-      // Add to this HashSet for additional comment delimiters
-      var comments = new HashSet<char> { ';' };
-
       using (var sr = new StreamReader(this.FilePath))
       {
         string line;
         string section = string.Empty; // the current section
         while ((line = sr.ReadLine()) != null)
         {
-          // Skip empty lines
-          if (string.IsNullOrWhiteSpace(line))
-          {
-            continue;
-          }
-
-          // Skip comment lines
-          if (comments.Contains(line.Trim()[0]))
-          {
-            continue;
-          }
+          if (this.isIrrelevant(line)) continue;
 
           line = line.Trim();
           if (line[0] == '[')
@@ -194,9 +189,59 @@ namespace Striking
       }
     }
 
+    /// <summary>
+    /// A line is irrelevant if it only contains a comment, whitespace or is empty.
+    /// </summary>
+    /// <param name="line">The line</param>
+    /// <returns>Whether the line is irrelevant or not.</returns>
+    private bool isIrrelevant(string line)
+    {
+      if (string.IsNullOrWhiteSpace(line) ||
+         comments.Contains(line.Trim()[0]))
+      {
+        return true;
+      }
+      return false;
+    }
+
     public void Save(params object[] objects)
     {
-      
+      // Write the changes from the objects into the data set
+      foreach (var target in objects)
+      {
+        foreach (var pair in this.getRelatedPropertiesAndAttributeData(target))
+        {
+          var customAttributeData = pair.Item2;
+          var property = pair.Item1;
+
+          var value = string.Empty;
+          string section = string.Empty;
+          string key = string.Empty;
+
+          // Only properties with the section specified
+          if (customAttributeData.ConstructorArguments.Count == 2)
+          {
+            // key, section
+            section = customAttributeData.ConstructorArguments[0].Value.ToString();
+            key = customAttributeData.ConstructorArguments[1].Value.ToString();
+
+            this.pairs[section][key] = property.GetValue(target, null).ToString();
+          }
+        }
+      }
+
+      // Write to file
+      using (var sw = new StreamWriter(this.FilePath,false))
+      {
+        foreach (var pair in this.pairs)
+        {
+          sw.WriteLine(string.Format("[{0}]", pair.Key));
+          foreach (var ipair in pair.Value)
+          {
+            sw.WriteLine(string.Format("{0}={1}", ipair.Key, ipair.Value));
+          }
+        }
+      }
     }
 
     /// <summary>

@@ -40,7 +40,7 @@ public string Name { get; set; }
 ```
 
 To make this more precise and less prone to errors you can also specify a section:
-
+```
 ```csharp
 [Ini("owner", "name")]
 public string OwnerName { get; set; }
@@ -55,6 +55,8 @@ parser.Fill(myObject);
 # Install
 
 # Requirements
+
+It doesn't use any OS API calls so it should run on any platform.
 
 * .NET Framework 4 or higher (has only been tested on this version)
 
