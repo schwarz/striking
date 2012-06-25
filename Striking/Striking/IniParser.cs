@@ -39,19 +39,18 @@ namespace Striking
   public class IniParser
   {
     /// <summary>
+    /// Gets or sets a Dictionary containing Dictionaries. The key represents a section, the nested key an actual value.
+    /// </summary>
+    private Dictionary<string, Dictionary<string, string>> pairs = new Dictionary<string, Dictionary<string, string>>();
+
+    /// <summary>
     /// Gets or sets a string containing the path of the .ini.
     /// </summary>
     public string FilePath { get; set; }
 
-    /// <summary>
-    /// Gets or sets a Dictionary containing all the key/value pairs. The key contains both the section and the key. For example: "General;;Name"
-    /// </summary>
-    private Dictionary<string, Dictionary<string, string>> pairs { get; set; }
-
     public IniParser(string filePath, bool parseImmediately = false)
     {
       this.FilePath = filePath;
-      this.pairs = new Dictionary<string, Dictionary<string, string>>();
 
       if (parseImmediately)
       {
@@ -118,17 +117,6 @@ namespace Striking
       }
     }
 
-    private string sectionOfKey(string key)
-    {
-      foreach (var outer in this.pairs)
-      {
-        if(outer.Value.Keys.Contains(key)){
-          return outer.Key;
-        }
-      }
-      throw new KeyNotFoundException();
-    }
-
     public void Parse()
     {
       this.pairs.Clear();
@@ -191,6 +179,18 @@ namespace Striking
           }
         }
       }
+    }
+
+    private string sectionOfKey(string key)
+    {
+      foreach (var outer in this.pairs)
+      {
+        if (outer.Value.Keys.Contains(key))
+        {
+          return outer.Key;
+        }
+      }
+      throw new KeyNotFoundException();
     }
   }
 }
