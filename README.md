@@ -5,7 +5,7 @@ It's easy to extend and contains various features to ease the development proces
 
 If you run into performance issues you can use Striking as a base to taylor your own problem-specific solution.
 
-# Usage
+## Usage
 
 _The following examples work if you use the file testdata.ini from the test library._
 
@@ -29,7 +29,7 @@ The first indexer specifies the section, the while the second specified the key:
 string name = parser["owner"]["name"];
 ```
 
-## Autofill
+### Autofill
 
 It's also possible to define attributes for your properties, to let the parser automatically fill in the data you want.
 There is a single attribute with a different number of arguments. If you only specify a key, the parser will take the value of first occurance of said key:
@@ -52,7 +52,7 @@ Now you simply pass this object as an argument the IniParser#Fill method like fo
 parser.Fill(myObject);
 ```
 
-## Saving
+### Saving
 
 It's also possible to persist the loaded data back to the file system. You can do this using the IniParser#Save method. 
 This method optionally accepts an indefinite ammount of objects, containing properties filled with data from ini files.
@@ -64,14 +64,14 @@ Values from such objects overwrite data the parser tracks in any case.
 parser.Save(myObject);
 ```
 
-# Install
+## Install
 
-# Requirements
+## Requirements
 
 It doesn't use any OS API calls so it should run on any platform.
 
 * .NET Framework 4 or higher (has only been tested on this version)
 
-# License
+## License
 
 Striking is released under the MIT license. See LICENSE for details.
