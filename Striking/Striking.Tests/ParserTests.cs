@@ -27,7 +27,6 @@ namespace Striking.Tests
 {
   using Striking;
   using Xunit;
-  using System;
 
   public class ParserTests
   {

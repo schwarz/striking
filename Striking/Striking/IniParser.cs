@@ -59,10 +59,7 @@ namespace Striking
     {
       this.FilePath = filePath;
 
-      if (parseImmediately)
-      {
-        this.Parse();
-      }
+      if (parseImmediately) this.Parse();
     }
 
     public Dictionary<string, string> this[string key]
@@ -111,6 +108,11 @@ namespace Striking
       } 
     }
 
+    /// <summary>
+    /// Returns a collection of properties and custom attribute data relevant to the parser.
+    /// </summary>
+    /// <param name="target">The target object</param>
+    /// <returns>A collection of properties and custom attribute data</returns>
     private IEnumerable<Tuple<PropertyInfo, CustomAttributeData>> getRelatedPropertiesAndAttributeData(object target)
     {
       var properties = target.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
@@ -138,6 +140,9 @@ namespace Striking
       }
     }
 
+    /// <summary>
+    /// Parses an ini file.
+    /// </summary>
     public void Parse()
     {
       this.pairs.Clear();
@@ -204,6 +209,10 @@ namespace Striking
       return false;
     }
 
+    /// <summary>
+    /// Saves changes back to an ini file.
+    /// </summary>
+    /// <param name="objects">Optionally objects filled with ini data can be passed. Later object's data overwrites previous data.</param>
     public void Save(params object[] objects)
     {
       // Write the changes from the objects into the data set
