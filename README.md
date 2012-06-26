@@ -52,6 +52,18 @@ Now you simply pass this object as an argument the IniParser#Fill method like fo
 parser.Fill(myObject);
 ```
 
+## Saving
+
+It's also possible to persist the loaded data back to the file system. You can do this using the IniParser#Save method. 
+This method optionally accepts an indefinite ammount of objects, containing properties filled with data from ini files.
+This works like a queue, overwriting previous values. If you have two objects both using the "name" key of the "owner" section, the latter objects value will be written to the file.
+
+Values from such objects overwrite data the parser tracks in any case.
+
+```csharp
+parser.Save(myObject);
+```
+
 # Install
 
 # Requirements
