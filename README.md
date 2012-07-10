@@ -40,7 +40,7 @@ public string Name { get; set; }
 ```
 
 To make this more precise and less prone to errors you can also specify a section:
-```
+
 ```csharp
 [Ini("owner", "name")]
 public string OwnerName { get; set; }
